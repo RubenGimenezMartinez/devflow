@@ -9,7 +9,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const jiraClient = new JiraClient(context);
   const knowledgeManager = new KnowledgeManager(context);
   const flowEngine = new FlowEngine(context, jiraClient, knowledgeManager);
-  const chatParticipant = new DevFlowChatParticipant(flowEngine, jiraClient);
+  const chatParticipant = new DevFlowChatParticipant(flowEngine, jiraClient, knowledgeManager);
 
   // Register commands
   context.subscriptions.push(

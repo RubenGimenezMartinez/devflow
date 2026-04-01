@@ -171,6 +171,25 @@ export class FlowEngine {
     return this.activeExecution;
   }
 
+  /** Interpolate variables in a template string */
+  interpolate(template: string, extraVars?: Record<string, unknown>): string {
+    const vars = { ...this.activeExecution?.variables, ...extraVars };
+    return template.replace(/\{\{(\w+(?:\.\w+)*)\}\}/g, (_match, keyPath: string) => {
+      const parts = keyPath.split('.');
+      let value: unknown = vars;
+      for (const part of parts) {
+        if (value === null || value === undefined || typeof value !== 'object') {
+          return `{{${keyPath}}}`;
+        }
+        value = (value as Record<string, unknown>)[part];
+      }
+      if (value === null || value === undefined) {
+        return `{{${keyPath}}}`;
+      }
+      return typeof value === 'string' ? value : JSON.stringify(value);
+    });
+  }
+
   getAllFlows(): FlowDefinition[] {
     return Array.from(this.flows.values());
   }

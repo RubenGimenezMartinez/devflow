@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
 import { JiraIssue, JiraComment, JiraIssueType } from './types';
+import { getDemoIssue } from './demo-data';
 
 export class JiraClient {
     private baseUrl = '';
     private email = '';
     private apiToken = '';
+    private demoMode = false;
 
     constructor(private readonly context: vscode.ExtensionContext) {
         this.loadConfig();
@@ -14,6 +16,11 @@ export class JiraClient {
         const config = vscode.workspace.getConfiguration('devflow.jira');
         this.baseUrl = config.get<string>('baseUrl', '').replace(/\/$/, '');
         this.email = config.get<string>('email', '');
+        this.demoMode = !this.baseUrl;
+    }
+
+    isDemoMode(): boolean {
+        return this.demoMode;
     }
 
     /** Ensure API token is available (from secret storage) */
@@ -70,11 +77,22 @@ export class JiraClient {
 
     /** Get a Jira issue by key */
     async getIssue(issueKey: string): Promise<JiraIssue> {
+        if (this.demoMode) {
+            const demo = getDemoIssue(issueKey);
+            if (!demo) {
+                throw new Error(`Demo issue not found: ${issueKey}. Available: DEMO-1, DEMO-2, DEMO-3`);
+            }
+            return demo;
+        }
         return this.request<JiraIssue>(`/issue/${encodeURIComponent(issueKey)}`);
     }
 
     /** Add a comment to an issue */
     async addComment(issueKey: string, comment: JiraComment): Promise<void> {
+        if (this.demoMode) {
+            vscode.window.showInformationMessage(`[DEMO] Comment added to ${issueKey}`);
+            return;
+        }
         await this.request(`/issue/${encodeURIComponent(issueKey)}/comment`, {
             method: 'POST',
             body: JSON.stringify(comment)
