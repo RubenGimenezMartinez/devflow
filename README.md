@@ -45,6 +45,43 @@ npm run compile
 # F5 en VS Code para lanzar Extension Development Host
 ```
 
+## Instalación en otro equipo
+
+### Opción A: Instalar desde .vsix (recomendado)
+
+1. **Genera el paquete** (en el equipo de desarrollo):
+   ```bash
+   cd devflow-extension
+   npm install
+   npm run compile
+   npx vsce package --allow-missing-repository
+   ```
+   Esto genera `devflow-0.1.0.vsix`.
+
+2. **Copia el `.vsix`** al otro equipo (USB, email, OneDrive, etc.)
+
+3. **Instala en VS Code**:
+   - Abre VS Code → **Ctrl+Shift+P** → `Extensions: Install from VSIX...`
+   - Selecciona el archivo `devflow-0.1.0.vsix`
+   - Reinicia VS Code
+
+### Opción B: Instalar desde el repositorio
+
+```bash
+git clone https://github.com/RubenGimenezMartinez/devflow.git
+cd devflow/devflow-extension
+npm install
+npm run compile
+npx vsce package --allow-missing-repository
+# Instala el .vsix generado con Ctrl+Shift+P → "Extensions: Install from VSIX..."
+```
+
+### Opción C: Modo desarrollo (para depurar)
+
+1. Clona el repo y abre la carpeta `devflow` en VS Code
+2. `cd devflow-extension && npm install`
+3. Pulsa **F5** para lanzar en modo debug
+
 ## Uso de la Extensión
 
 ### 1. Arrancar en modo desarrollo
