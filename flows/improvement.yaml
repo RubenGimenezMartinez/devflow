@@ -1,0 +1,100 @@
+# Flow: Mejora / Improvement
+name: "Improvement Flow"
+description: "Flujo para mejoras técnicas, refactors y optimizaciones"
+triggerTypes:
+  - Improvement
+  - Mejora
+  - "Technical Debt"
+  - Refactor
+
+variables:
+  jira:
+    - key
+    - summary
+    - description
+    - priority
+    - components
+    - labels
+  derived:
+    - currentState
+    - proposedChanges
+    - riskAssessment
+    - releaseNotes
+
+steps:
+  - id: extract-context
+    name: "Extraer contexto"
+    agent: default
+    enabled: true
+    instructions: |
+      Lee el issue {{jira.key}} y extrae el contexto completo.
+      Identifica el área técnica afectada y la motivación de la mejora.
+    inputs: [jira.key]
+    outputs: [improvementContext]
+    conditions:
+      next: analyze-current-state
+
+  - id: analyze-current-state
+    name: "Analizar estado actual"
+    agent: default
+    enabled: true
+    instructions: |
+      Analiza el estado actual del código/sistema a mejorar.
+      Documenta: métricas actuales, problemas identificados, deuda técnica.
+      Consulta knowledge base para historial de cambios previos.
+    inputs: [improvementContext]
+    outputs: [currentState]
+    conditions:
+      next: design-improvement
+      back: extract-context
+
+  - id: design-improvement
+    name: "Diseñar mejora"
+    agent: default
+    enabled: true
+    instructions: |
+      Diseña la mejora:
+      1. Cambios propuestos con justificación
+      2. Impacto en performance/mantenibilidad
+      3. Riesgo de regresión
+      4. Plan de migración si aplica
+    inputs: [currentState]
+    outputs: [proposedChanges, riskAssessment]
+    conditions:
+      next: implement
+      back: analyze-current-state
+
+  - id: implement
+    name: "Implementar"
+    agent: default
+    enabled: true
+    instructions: |
+      Implementa la mejora de forma incremental.
+      Asegura backward compatibility.
+      Incluye tests de regresión.
+    inputs: [proposedChanges]
+    outputs: [implementedFiles, testResults]
+    conditions:
+      next: generate-outputs
+      back: design-improvement
+
+  - id: generate-outputs
+    name: "Generar salidas"
+    agent: default
+    enabled: true
+    instructions: |
+      Genera comentario de Jira con el resumen de la mejora.
+      Genera release notes si es user-facing.
+    inputs: [proposedChanges, implementedFiles]
+    outputs: [jiraComment, releaseNotes]
+    conditions:
+      next: update-knowledge
+
+  - id: update-knowledge
+    name: "Actualizar Knowledge Base"
+    agent: default
+    enabled: true
+    instructions: |
+      Registra la mejora, decisiones de diseño y métricas antes/después.
+    inputs: [proposedChanges, currentState]
+    outputs: [knowledgeUpdated]

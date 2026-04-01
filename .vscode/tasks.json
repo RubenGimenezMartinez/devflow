@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "compile",
+      "path": "devflow-extension",
+      "label": "npm: compile - devflow-extension",
+      "group": "build",
+      "problemMatcher": "$tsc"
+    },
+    {
+      "type": "npm",
+      "script": "watch",
+      "path": "devflow-extension",
+      "label": "npm: watch - devflow-extension",
+      "isBackground": true,
+      "group": "build",
+      "problemMatcher": "$tsc-watch"
+    }
+  ]
+}
