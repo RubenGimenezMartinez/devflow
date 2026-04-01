@@ -1,0 +1,146 @@
+# Flow: Bug / Error / Corrección
+# Este flujo se ejecuta cuando la tarea de Jira es de tipo bug, error o corrección
+
+name: "Bug Fix Flow"
+description: "Flujo para análisis, resolución y documentación de bugs"
+triggerTypes:
+  - Bug
+  - Error
+  - Corrección
+
+variables:
+  jira:
+    - key           # PROJ-123
+    - summary
+    - description
+    - priority
+    - components
+    - affectedVersions
+    - fixVersions
+    - labels
+    - reporter
+    - assignee
+    - customFields  # campos custom del proyecto
+  derived:
+    - rootCause
+    - impactAnalysis
+    - solution
+    - testPlan
+    - releaseNotes
+
+steps:
+  - id: extract-context
+    name: "Extraer contexto del Jira"
+    agent: default
+    enabled: true
+    instructions: |
+      Lee el issue {{jira.key}} y extrae toda la información relevante.
+      Identifica: descripción del problema, pasos para reproducir,
+      comportamiento esperado vs actual, logs adjuntos, entorno.
+    inputs:
+      - jira.key
+    outputs:
+      - issueContext
+    conditions:
+      next: analyze-bug
+
+  - id: analyze-bug
+    name: "Analizar el bug"
+    agent: default
+    enabled: true
+    instructions: |
+      Con el contexto extraído, analiza:
+      1. Causa raíz probable
+      2. Componentes afectados
+      3. Impacto en el sistema
+      4. Riesgo de regresión
+      
+      Usa la knowledge base para cruzar con análisis previos.
+    inputs:
+      - issueContext
+    outputs:
+      - rootCause
+      - impactAnalysis
+    conditions:
+      next: propose-solution
+      back: extract-context
+
+  - id: propose-solution
+    name: "Proponer solución"
+    agent: default
+    enabled: true
+    instructions: |
+      Propón una solución detallada incluyendo:
+      1. Archivos a modificar
+      2. Cambios específicos
+      3. Tests necesarios
+      4. Consideraciones de backward compatibility
+    inputs:
+      - rootCause
+      - impactAnalysis
+    outputs:
+      - solution
+      - testPlan
+    conditions:
+      next: implement
+      back: analyze-bug
+
+  - id: implement
+    name: "Implementar solución"
+    agent: default
+    enabled: true
+    instructions: |
+      Implementa la solución propuesta. Sigue las convenciones del proyecto.
+      Genera tests unitarios y de integración según el plan de tests.
+    inputs:
+      - solution
+      - testPlan
+    outputs:
+      - implementedFiles
+      - testResults
+    conditions:
+      next: generate-outputs
+      back: propose-solution
+
+  - id: generate-outputs
+    name: "Generar salidas para Jira"
+    agent: default
+    enabled: true
+    instructions: |
+      Genera los outputs para Jira:
+      1. Comentario de análisis (causa raíz + impacto)
+      2. Comentario de resolución (qué se cambió y por qué)
+      3. Release notes entry
+      4. Versión fix (fixVersion)
+      
+      Formato de comentario Jira:
+      {panel:title=Análisis|borderColor=#ccc}
+      *Causa raíz:* {{rootCause}}
+      *Impacto:* {{impactAnalysis}}
+      {panel}
+    inputs:
+      - rootCause
+      - impactAnalysis
+      - solution
+      - implementedFiles
+    outputs:
+      - jiraComment
+      - releaseNotes
+      - fixVersion
+    conditions:
+      next: update-knowledge
+
+  - id: update-knowledge
+    name: "Actualizar Knowledge Base"
+    agent: default
+    enabled: true
+    instructions: |
+      Actualiza la knowledge base con:
+      - Patrón del bug y solución aplicada
+      - Dependencias descubiertas
+      - Reglas de negocio identificadas
+    inputs:
+      - rootCause
+      - solution
+    outputs:
+      - knowledgeUpdated

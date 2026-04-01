@@ -45,6 +45,72 @@ npm run compile
 # F5 en VS Code para lanzar Extension Development Host
 ```
 
+## Uso de la Extensión
+
+### 1. Arrancar en modo desarrollo
+
+1. Abre la carpeta `devflow` en VS Code
+2. Pulsa **F5** — se abre una segunda ventana (Extension Development Host)
+3. En esa ventana puedes abrir cualquier proyecto de trabajo
+
+### 2. Comandos disponibles
+
+Abre la Command Palette (**Ctrl+Shift+P**) y busca "DevFlow":
+
+| Comando | Descripción |
+|---------|-------------|
+| `DevFlow: Start Flow from Jira Issue` | Inicia un flujo pidiendo la key del issue |
+| `DevFlow: Open Dashboard` | Abre el panel visual con flujos y progreso |
+| `DevFlow: Configure Flows` | Abre el dashboard en modo configuración |
+
+### 3. Chat con Copilot (@devflow)
+
+Abre el chat de Copilot (**Ctrl+Alt+I**) y usa estos comandos:
+
+| Comando | Ejemplo | Descripción |
+|---------|---------|-------------|
+| `/flow <KEY>` | `@devflow /flow DEMO-1` | Inicia flujo para un issue |
+| `/next` | `@devflow /next` | Avanza al siguiente paso |
+| `/back` | `@devflow /back` | Retrocede al paso anterior |
+| `/status` | `@devflow /status` | Muestra estado del flujo activo |
+| _(texto libre)_ | `@devflow el error está en calculateDiscount()` | Envía input al paso actual |
+
+### 4. Flujo típico completo
+
+```
+@devflow /flow DEMO-1          → Carga issue, detecta tipo Bug, inicia flujo
+@devflow /next                  → Analiza causa raíz
+@devflow /next                  → Propone solución
+@devflow /next                  → Implementación
+@devflow /next                  → Genera: comentario Jira + release notes + knowledge base
+```
+
+### 5. Issues de demo (sin Jira)
+
+Si no configuras Jira, la extensión funciona en **modo demo** con estos issues:
+
+| Key | Tipo | Descripción |
+|-----|------|-------------|
+| `DEMO-1` | Bug | Error en cálculo de descuentos con dos cupones |
+| `DEMO-2` | Story | Exportar pedidos en PDF |
+| `DEMO-3` | Improvement | Mejorar rendimiento de listado de productos |
+
+### 6. Configurar Jira (opcional)
+
+En Settings de VS Code:
+- `devflow.jira.baseUrl` → URL de tu Jira (ej: `https://tu-org.atlassian.net`)
+- `devflow.jira.email` → Tu email de Jira
+- Al primer uso te pedirá el **API token** (se guarda en Secret Storage)
+
+### 7. Configurar flujos
+
+Los flujos se definen en archivos YAML en `flows/`. Cada flujo tiene:
+- **triggerTypes**: tipos de issue que activan el flujo (Bug, Story, Improvement...)
+- **steps**: pasos secuenciales con instrucciones, agente, inputs/outputs
+- **variables**: datos que se leen de Jira + variables derivadas del análisis
+
+Puedes activar/desactivar pasos individuales con `enabled: true/false`.
+
 ## Estructura del Proyecto
 
 ```

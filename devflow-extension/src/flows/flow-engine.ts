@@ -23,26 +23,39 @@ export class FlowEngine {
 
   /** Load all flow definitions from YAML files */
   private loadFlows(): void {
+    const dirs: string[] = [];
+
+    // 1. Bundled flows (shipped with the extension)
+    const extensionFlowsDir = path.join(this.context.extensionPath, '..', '..', 'flows');
+    const bundledFlowsDir = path.join(this.context.extensionPath, 'flows');
+    if (fs.existsSync(bundledFlowsDir)) {
+      dirs.push(bundledFlowsDir);
+    } else if (fs.existsSync(extensionFlowsDir)) {
+      dirs.push(extensionFlowsDir);
+    }
+
+    // 2. Workspace flows (user-configured path)
     const workspaceFolders = vscode.workspace.workspaceFolders;
-    if (!workspaceFolders) {
-      return;
+    if (workspaceFolders) {
+      const config = vscode.workspace.getConfiguration("devflow");
+      const flowsRelPath = config.get<string>("flowsPath", "./flows");
+      const workspaceFlowsDir = path.resolve(workspaceFolders[0].uri.fsPath, flowsRelPath);
+      if (fs.existsSync(workspaceFlowsDir) && !dirs.includes(workspaceFlowsDir)) {
+        dirs.push(workspaceFlowsDir);
+      }
     }
 
-    const config = vscode.workspace.getConfiguration("devflow");
-    const flowsRelPath = config.get<string>("flowsPath", "./flows");
-    const flowsDir = path.resolve(workspaceFolders[0].uri.fsPath, flowsRelPath);
-
-    if (!fs.existsSync(flowsDir)) {
-      return;
-    }
-
-    const files = fs
-      .readdirSync(flowsDir)
-      .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"));
-    for (const file of files) {
-      const content = fs.readFileSync(path.join(flowsDir, file), "utf-8");
-      const flow = parseYaml(content) as FlowDefinition;
-      this.flows.set(flow.name, flow);
+    for (const flowsDir of dirs) {
+      const files = fs
+        .readdirSync(flowsDir)
+        .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"));
+      for (const file of files) {
+        const content = fs.readFileSync(path.join(flowsDir, file), "utf-8");
+        const flow = parseYaml(content) as FlowDefinition;
+        if (!this.flows.has(flow.name)) {
+          this.flows.set(flow.name, flow);
+        }
+      }
     }
   }
 

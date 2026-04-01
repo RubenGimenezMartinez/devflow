@@ -1,0 +1,138 @@
+# Flow: Historia de Usuario
+# Flujo para desarrollo de nuevas funcionalidades
+
+name: "User Story Flow"
+description: "Flujo para análisis, diseño e implementación de historias de usuario"
+triggerTypes:
+  - Story
+  - Historia
+  - "User Story"
+
+variables:
+  jira:
+    - key
+    - summary
+    - description
+    - acceptanceCriteria
+    - priority
+    - components
+    - sprint
+    - storyPoints
+    - epic
+    - labels
+  derived:
+    - technicalDesign
+    - subtasks
+    - implementationPlan
+    - releaseNotes
+
+steps:
+  - id: extract-context
+    name: "Extraer contexto de la historia"
+    agent: default
+    enabled: true
+    instructions: |
+      Lee el issue {{jira.key}} y extrae:
+      - Descripción funcional completa
+      - Criterios de aceptación
+      - Mockups o diagramas adjuntos
+      - Dependencias con otras historias
+      - Epic padre y contexto del sprint
+    inputs:
+      - jira.key
+    outputs:
+      - storyContext
+    conditions:
+      next: analyze-requirements
+
+  - id: analyze-requirements
+    name: "Analizar requisitos"
+    agent: default
+    enabled: true
+    instructions: |
+      Analiza los requisitos de la historia:
+      1. Identifica las reglas de negocio
+      2. Detecta edge cases
+      3. Mapea dependencias técnicas
+      4. Verifica completitud de criterios de aceptación
+      5. Consulta knowledge base para patrones similares
+    inputs:
+      - storyContext
+    outputs:
+      - requirementsAnalysis
+    conditions:
+      next: technical-design
+      back: extract-context
+
+  - id: technical-design
+    name: "Diseño técnico"
+    agent: default
+    enabled: true
+    instructions: |
+      Diseña la solución técnica:
+      1. Componentes involucrados
+      2. Cambios en modelo de datos
+      3. APIs nuevas o modificadas
+      4. Diagrama de flujo si aplica
+      5. Subtareas técnicas
+    inputs:
+      - requirementsAnalysis
+    outputs:
+      - technicalDesign
+      - subtasks
+    conditions:
+      next: implement
+      back: analyze-requirements
+
+  - id: implement
+    name: "Implementar"
+    agent: default
+    enabled: true
+    instructions: |
+      Implementa siguiendo el diseño técnico.
+      Para cada subtarea, genera el código correspondiente.
+      Incluye tests para cada criterio de aceptación.
+    inputs:
+      - technicalDesign
+      - subtasks
+    outputs:
+      - implementedFiles
+      - testResults
+    conditions:
+      next: generate-outputs
+      back: technical-design
+
+  - id: generate-outputs
+    name: "Generar salidas para Jira"
+    agent: default
+    enabled: true
+    instructions: |
+      Genera:
+      1. Comentario de diseño técnico en Jira
+      2. Release notes de la funcionalidad
+      3. Documentación de API si aplica
+      4. Actualizar versión de fix
+    inputs:
+      - technicalDesign
+      - implementedFiles
+    outputs:
+      - jiraComment
+      - releaseNotes
+    conditions:
+      next: update-knowledge
+
+  - id: update-knowledge
+    name: "Actualizar Knowledge Base"
+    agent: default
+    enabled: true
+    instructions: |
+      Actualiza la knowledge base con:
+      - Nuevos patrones implementados
+      - Reglas de negocio descubiertas
+      - Dependencias entre componentes
+      - Decisiones de diseño y justificación
+    inputs:
+      - technicalDesign
+      - requirementsAnalysis
+    outputs:
+      - knowledgeUpdated
