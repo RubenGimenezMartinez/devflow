@@ -207,6 +207,36 @@ export class FlowEngine {
     return Array.from(this.flows.values());
   }
 
+  /** Toggle a step's enabled state */
+  toggleStep(flowName: string, stepId: string): boolean {
+    const flow = this.flows.get(flowName);
+    if (!flow) { return false; }
+    const step = flow.steps.find(s => s.id === stepId);
+    if (!step) { return false; }
+    step.enabled = !step.enabled;
+    return step.enabled;
+  }
+
+  /** Update a step's instructions */
+  updateStepInstructions(flowName: string, stepId: string, instructions: string): boolean {
+    const flow = this.flows.get(flowName);
+    if (!flow) { return false; }
+    const step = flow.steps.find(s => s.id === stepId);
+    if (!step) { return false; }
+    step.instructions = instructions;
+    return true;
+  }
+
+  /** Update a step's agent */
+  updateStepAgent(flowName: string, stepId: string, agent: string): boolean {
+    const flow = this.flows.get(flowName);
+    if (!flow) { return false; }
+    const step = flow.steps.find(s => s.id === stepId);
+    if (!step) { return false; }
+    step.agent = agent;
+    return true;
+  }
+
   reloadFlows(): void {
     this.flows.clear();
     this.loadFlows();
